@@ -6,7 +6,10 @@ public class Tiktaktoe {
         X,
         O
     }
-    public static Status[][] buildGame(int boardLength) {
+    Status[][]board;
+    int boardLength;
+    int winLength;
+    public Status[][] buildGame() {
         Status[][]board = new Status[boardLength + 2][boardLength];
         for (int i = 0; i < boardLength; i++) {
             board[i] = new Status [boardLength];
@@ -15,8 +18,37 @@ public class Tiktaktoe {
         }
         return board;
     }
-    public static boolean winGame(Status[][]board, int boardLength) {
+    public boolean check(int x, int y) {
+        return (0 <= x && x < boardLength && 0 <= y && y < boardLength);
+    }
+
+    public Status getWinner() {
+        int hx[] = {1, 0, 1, -1};
+        int hy[] = {0, 1, 1, 1};
+        for(int  h = 0; h < 4; h ++) {
+            for(int i = 0; i < boardLength; i++) {
+                for(int j = 0; j < boardLength; j++) {
+                    if(board[i][j] == Status.NULL) continue;
+                    int x = i;
+                    int y = j;
+                    int len = 0;
+                    while(check(x, y)) {
+                        if(board[x][y] != board[i][j]) break;
+                        len ++;
+                        x += hx[h];
+                        y += hy[h];
+                    }
+                    if(len == winLength) {
+                        return board[i][j];
+                    }
+                }
+            }
+        }
+        return Status.NULL;
+    }
+    public boolean printBoard() {
         Status winner = Status.NULL; 
+        boolean canContinue = false;
         for(int i = 0; i < boardLength; i ++) {
             for (int j = 0; j < boardLength; j++) {
                 switch (board[i][j]) {
@@ -30,54 +62,54 @@ public class Tiktaktoe {
                         System.out.print("[o]");
                         break;
                 }
-                if(board[i][j] == Status.NULL) continue;
-                Status cur = Status.NULL;
-
-                if(i != 0 && i != boardLength - 1 && board[i][j] == board[i-1][j] && board[i][j] == board[i+1][j]) {
-                    cur = board[i][j];
-                }
-                if(j != 0 && j != boardLength - 1 && board[i][j] == board[i][j-1] && board[i][j] == board[i][j+1]) {
-                    cur = board[i][j];
-                }
-                if(i != 0 && i != boardLength - 1 && j != 0 && j != boardLength - 1 
-                && board[i][j] == board[i-1][j-1] && board[i][j] == board[i+1][j+1]) {
-                    cur = board[i][j];
-                }
-                if(cur != Status.NULL) {
-                    winner = cur;
+                if(board[i][j] == Status.NULL) {
+                    canContinue = true;
+                    continue;
                 }
             }
             System.out.println();
         }
+        if(canContinue == false) {
+            System.out.println("Draw");
+        }
+        winner = getWinner();
         if(winner == Status.NULL) return false;
         else {
-            System.out.println("winner: " + winner);
+            System.out.println("Winner: " + winner);
             return true; 
         }
     }
-    public static void runGame(Status[][]board, int boardLength) {
+    public void runGame() {
+
         Scanner scanner = new Scanner(System.in);
+        System.out.println(" Welcome to Game Tik Tac Toe <3");
+        System.out.print("Length of board: ");
+        boardLength = scanner.nextInt();
+        System.out.print("Winning chain length: ");
+        winLength = scanner.nextInt();
+        board = buildGame();
+
         boolean exit = false;
         int turnPlay = 0;
         
         while(!exit) {
             switch(turnPlay) {
                 case 0: 
-                    System.out.println("Den luot cua X");
+                    System.out.println("Turn X");
                     break;
                 case 1: 
-                    System.out.println("Den luot cua O");
+                    System.out.println("Turn O");
                     break;
             }
 
-            System.out.print("Nhap du lieu: \n");
+            System.out.println("Row Col: ");
             while(true) {
                 int x = scanner.nextInt();
                 int y = scanner.nextInt();
                 x --;
                 y --;
-                if(board[x][y] != Status.NULL && x < 0 && y < 0 && x >=  boardLength && y >= boardLength) {
-                    System.out.println("Khong hop le. Nhap lai: ");
+                if(board[x][y] != Status.NULL && check(x, y) == true) {
+                    System.out.println("Invalid input, try again ");
                     continue;
                 }
                 switch(turnPlay) {
@@ -90,7 +122,7 @@ public class Tiktaktoe {
                 }
                 break;
             }
-            if(winGame(board, boardLength)) {
+            if(printBoard()) {
                 break;
             }
             turnPlay ++;
@@ -99,14 +131,8 @@ public class Tiktaktoe {
         }
         scanner.close();
     }
-    public static void main(String[] args) {
-        System.out.println(" Welcome to Game Tik Tac Toe <3");
-
-        Scanner scanner = new Scanner(System.in);
-        int boardLength = 3;
-        Status[][] board = buildGame(boardLength);
-        runGame(board, 3);
-        
-        scanner.close();
+    public static void main (String[] args) {
+        Tiktaktoe game = new Tiktaktoe();
+        game.runGame();
     }
 }
